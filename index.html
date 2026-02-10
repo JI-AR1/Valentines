@@ -1,503 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For My Valentine</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden; /* Prevents scrolling */
+            font-family: 'Verdana', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            color: white;
+        }
 
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>For My Valentine</title>
+        /* --- SCREEN 1: INTRO --- */
+        #intro {
+            text-align: center;
+            z-index: 50;
+            cursor: pointer;
+            color: #ffb7c5;
+            padding: 20px;
+        }
+        #intro h1 {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+            text-shadow: 0 0 20px #ff0066;
+        }
+
+        /* --- SCREEN 2: SLIDESHOW --- */
+        #slideshow-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; 
+            height: 80%; 
+            display: none; 
+            z-index: 5;
+            transition: opacity 0.5s; 
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: contain; 
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            transform: scale(1);
+        }
+
+        .active-slide {
+            opacity: 1; 
+        }
+
+        /* --- LYRICS OVERLAY --- */
+        #lyrics-container {
+            position: absolute;
+            bottom: 15%; 
+            z-index: 20;
+            text-align: center;
+            width: 90%;
+            display: none; 
+        }
+
+        .lyric-line {
+            font-size: 1.8rem; /* Slightly smaller for mobile safety */
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            transform: translateY(20px);
+            color: #ff99cc;
+            text-shadow: 0 0 10px #ff0066, 2px 2px 0px rgba(0,0,0,0.5);
+        }
+
+        /* --- SCREEN 3: BOUQUET FINALE --- */
+        #bouquet-container {
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 30;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* The Pink Paper Wrap (Triangle) */
+        .bouquet-wrapper {
+            position: absolute;
+            bottom: 15%; 
+            width: 0; 
+            height: 0; 
+            border-left: 80px solid transparent;
+            border-right: 80px solid transparent;
+            border-top: 250px solid #ffb7c5; 
+            border-radius: 10px;
+            filter: drop-shadow(0 0 20px rgba(255, 100, 150, 0.6));
+            z-index: 40; 
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        /* The Big Heart Behind */
+        .big-heart {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background-color: rgba(255, 0, 100, 0.15);
+            transform: rotate(-45deg);
+            z-index: 31; 
+            opacity: 0;
+            transition: opacity 3s;
+            animation: pulse 3s infinite;
+        }
+        .big-heart::before, .big-heart::after {
+            content: "";
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background-color: rgba(255, 0, 100, 0.15);
+        }
+        .big-heart::before { top: -250px; left: 0; }
+        .big-heart::after { left: 250px; top: 0; }
+
+        /* --- THE FLOWER SYSTEM --- */
+        .flower-unit {
+            position: absolute;
+            bottom: 35%; 
+            width: 10px; 
+            height: 300px; 
+            transform-origin: bottom center;
+            z-index: 35; 
+        }
+
+        .stem {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            background: linear-gradient(to top, #2e8b57, #66cdaa); 
+            height: 0%; 
+            border-radius: 4px;
+            transition: height 1.5s ease-out;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #66cdaa;
+            border-radius: 0 50% 0 50%;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        .leaf.left { left: -15px; top: 50%; transform: rotate(-30deg); }
+        .leaf.right { right: -15px; top: 60%; transform: rotate(30deg); }
+
+        .photo-bloom {
+            position: absolute;
+            top: 0; 
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0); 
+            width: 120px; 
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%; 
+            border: 4px solid #ffcc00; 
+            box-shadow: 0 0 15px rgba(255, 100, 150, 0.8);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50;
+        }
         
-        <link rel="icon" href="data:image/svg+xml,svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
+        .photo-bloom::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border-radius: 50%;
+            border: 2px dashed pink;
+            z-index: -1;
+        }
 
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                background-color: #000;
-                overflow: hidden;
-                font-family: 'Verdana', sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                color: white;
-            }
+        /* Active Classes */
+        .grow-stem { height: 100%; }
+        .bloom-now { transform: translate(-50%, -50%) scale(1); }
+        .show-leaf { opacity: 1; }
 
-            /* --- SCREEN 1: INTRO --- */
-            #intro {
-                text-align: center;
-                z-index: 50;
-                cursor: pointer;
-                color: #ffb7c5;
-            }
-            #intro h1 {
-                font-size: 2.5rem;
-                animation: pulse 2s infinite;
-                text-shadow: 0 0 20px #ff0066;
-            }
+        /* Corner Roses */
+        .corner-decoration {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0;
+            transition: opacity 3s;
+            z-index: 60;
+            filter: drop-shadow(0 0 10px pink);
+        }
+        .top-left { top: 20px; left: 20px; transform: rotate(-45deg); }
+        .top-right { top: 20px; right: 20px; transform: rotate(45deg); }
+        .btm-left { bottom: 20px; left: 20px; transform: rotate(-135deg); }
+        .btm-right { bottom: 20px; right: 20px; transform: rotate(135deg); }
 
-            /* --- SCREEN 2: SLIDESHOW --- */
-            #slideshow-container {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 100%; 
-                height: 80%; 
-                display: none; 
-                z-index: 5;
-                transition: opacity 0.5s; 
-            }
+        /* Messages */
+        .final-text {
+            position: absolute;
+            font-size: 1.2rem;
+            color: #ff99cc;
+            opacity: 0;
+            transition: opacity 3s;
+            text-shadow: 0 0 10px #ff0066;
+            z-index: 50;
+            text-align: center;
+            max-width: 30%;
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 10px;
+        }
 
-            .slide {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                background-size: contain; 
-                background-repeat: no-repeat;
-                background-position: center;
-                opacity: 0;
-                transition: opacity 1.5s ease-in-out;
-                transform: scale(1);
-            }
+        #center-message {
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem; 
+            bottom: 5%; 
+            width: 100%;
+            max-width: 90%;
+            background: none;
+        }
 
-            .active-slide {
-                opacity: 1; 
-            }
+        #left-message { left: 5%; bottom: 40%; }
+        #right-message { right: 5%; bottom: 40%; }
 
-            /* --- LYRICS OVERLAY --- */
-            #lyrics-container {
-                position: absolute;
-                bottom: 15%; 
-                z-index: 20;
-                text-align: center;
-                width: 90%;
-                display: none; 
-            }
+        @keyframes pulse {
+            0% { transform: scale(1) rotate(-45deg); opacity: 0.2; }
+            50% { transform: scale(1.1) rotate(-45deg); opacity: 0.4; }
+            100% { transform: scale(1) rotate(-45deg); opacity: 0.2; }
+        }
 
-            .lyric-line {
-                font-size: 2rem;
-                font-weight: bold;
-                opacity: 0;
-                transition: opacity 0.5s, transform 0.5s;
-                transform: translateY(20px);
-                color: #ff99cc;
-                text-shadow: 0 0 10px #ff0066, 2px 2px 0px rgba(0,0,0,0.5);
-            }
+        /* --- MOBILE RESPONSIVENESS (THE FIX) --- */
+        @media (max-width: 768px) {
+            /* 1. Shrink Heart */
+            .big-heart { width: 90vw; height: 90vw; }
+            .big-heart::before, .big-heart::after { width: 90vw; height: 90vw; }
+            .big-heart::before { top: -45vw; }
+            .big-heart::after { left: 45vw; }
 
-            /* --- SCREEN 3: BOUQUET FINALE --- */
-            #bouquet-container {
-                display: none;
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                z-index: 30;
-                justify-content: center;
-                align-items: center;
-            }
-
-            /* The Pink Paper Wrap (Triangle) */
+            /* 2. Scale down Wrapper */
             .bouquet-wrapper {
-                position: absolute;
-                bottom: 15%; 
-                width: 0; 
-                height: 0; 
-                border-left: 80px solid transparent;
-                border-right: 80px solid transparent;
-                border-top: 250px solid #ffb7c5; 
-                border-radius: 10px;
-                filter: drop-shadow(0 0 20px rgba(255, 100, 150, 0.6));
-                z-index: 40; /* In front of stems */
-                opacity: 0;
-                transition: opacity 1s;
+                bottom: 15%;
+                border-left: 60px solid transparent;
+                border-right: 60px solid transparent;
+                border-top: 180px solid #ffb7c5;
             }
 
-            /* The Big Heart Behind */
-            .big-heart {
-                position: absolute;
-                width: 500px;
-                height: 500px;
-                background-color: rgba(255, 0, 100, 0.15);
-                transform: rotate(-45deg);
-                z-index: 31; 
-                opacity: 0;
-                transition: opacity 3s;
-                animation: pulse 3s infinite;
-            }
-            .big-heart::before, .big-heart::after {
-                content: "";
-                position: absolute;
-                width: 500px;
-                height: 500px;
-                border-radius: 50%;
-                background-color: rgba(255, 0, 100, 0.15);
-            }
-            .big-heart::before { top: -250px; left: 0; }
-            .big-heart::after { left: 250px; top: 0; }
-
-            /* --- THE FLOWER SYSTEM --- */
-            /* A container for each flower (stem + photo) */
+            /* 3. Shorten Stems & Smaller Flowers */
             .flower-unit {
-                position: absolute;
-                bottom: 35%; /* Starts inside wrapper */
-                width: 10px; /* Width of stem base */
-                height: 300px; /* Max height of stem */
-                transform-origin: bottom center;
-                z-index: 35; /* Behind wrapper, in front of heart */
+                height: 220px; 
+                bottom: 30%;
             }
-
-            .stem {
-                position: absolute;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 6px;
-                background: linear-gradient(to top, #2e8b57, #66cdaa); /* Green Gradient */
-                height: 0%; /* Starts invisible */
-                border-radius: 4px;
-                transition: height 1.5s ease-out;
-            }
-
-            /* Leaves on stem */
-            .leaf {
-                position: absolute;
-                width: 20px;
-                height: 20px;
-                background-color: #66cdaa;
-                border-radius: 0 50% 0 50%;
-                opacity: 0;
-                transition: opacity 1s;
-            }
-            .leaf.left { left: -15px; top: 50%; transform: rotate(-30deg); }
-            .leaf.right { right: -15px; top: 60%; transform: rotate(30deg); }
-
-            /* The Photo Bloom */
             .photo-bloom {
-                position: absolute;
-                top: 0; /* Sits at top of stem */
-                left: 50%;
-                transform: translate(-50%, -50%) scale(0); /* Starts tiny */
-                width: 120px; 
-                height: 120px;
-                object-fit: cover;
-                border-radius: 50%; /* Makes it round like a flower */
-                border: 4px solid #ffcc00; /* Yellow center border */
-                box-shadow: 0 0 15px rgba(255, 100, 150, 0.8);
-                transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                z-index: 50;
-            }
-            
-            /* Simulates petals behind the photo */
-            .photo-bloom::before {
-                content: '';
-                position: absolute;
-                top: -10px; left: -10px; right: -10px; bottom: -10px;
-                border-radius: 50%;
-                border: 2px dashed pink;
-                z-index: -1;
+                width: 80px;
+                height: 80px;
             }
 
-            /* Active Classes for Animation */
-            .grow-stem { height: 100%; }
-            .bloom-now { transform: translate(-50%, -50%) scale(1); }
-            .show-leaf { opacity: 1; }
-
-            /* Corner Roses */
-            .corner-decoration {
-                position: absolute;
-                font-size: 4rem;
-                opacity: 0;
-                transition: opacity 3s;
-                z-index: 60;
-                filter: drop-shadow(0 0 10px pink);
-            }
-            .top-left { top: 20px; left: 20px; transform: rotate(-45deg); }
-            .top-right { top: 20px; right: 20px; transform: rotate(45deg); }
-            .btm-left { bottom: 20px; left: 20px; transform: rotate(-135deg); }
-            .btm-right { bottom: 20px; right: 20px; transform: rotate(135deg); }
-
-            /* Messages */
+            /* 4. Move Side Messages to TOP for space */
             .final-text {
-                position: absolute;
-                font-size: 1.2rem;
-                color: #ff99cc;
-                opacity: 0;
-                transition: opacity 3s;
-                text-shadow: 0 0 10px #ff0066;
-                z-index: 50;
-                text-align: center;
-                max-width: 25%;
-                font-weight: bold;
-                background: rgba(0,0,0,0.3);
-                padding: 10px;
-                border-radius: 10px;
+                font-size: 0.9rem;
+                max-width: 40%;
             }
-
+            #left-message {
+                top: 5%;
+                left: 5%;
+                bottom: auto; /* Unset bottom */
+                text-align: left;
+            }
+            #right-message {
+                top: 5%;
+                right: 5%;
+                bottom: auto; /* Unset bottom */
+                text-align: right;
+            }
+            
+            /* 5. Adjust Main Message */
             #center-message {
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 2rem; 
-                bottom: 5%; 
-                width: 100%;
-                max-width: 100%;
-                background: none;
+                font-size: 1.5rem;
+                bottom: 5%;
             }
+            
+            /* 6. Adjust Lyrics size */
+            .lyric-line { font-size: 1.4rem; }
+            
+            /* 7. Hide bottom roses if they crowd the text */
+            .btm-left, .btm-right { display: none; }
+        }
+    </style>
+</head>
+<body>
 
-            #left-message { left: 5%; bottom: 40%; }
-            #right-message { right: 5%; bottom: 40%; }
+    <audio id="bg-music" src="her.mp3"></audio>
 
-            @keyframes pulse {
-                0% { transform: scale(1) rotate(-45deg); opacity: 0.2; }
-                50% { transform: scale(1.1) rotate(-45deg); opacity: 0.4; }
-                100% { transform: scale(1) rotate(-45deg); opacity: 0.2; }
+    <div id="intro" onclick="startExperience()">
+        <h1>Click to Start ❤️</h1>
+    </div>
+
+    <div id="slideshow-container"></div>
+
+    <div id="lyrics-container">
+        <div id="lyric-text" class="lyric-line"></div>
+    </div>
+
+    <div id="bouquet-container">
+        <div class="big-heart"></div>
+        <div class="bouquet-wrapper"></div>
+        <div class="corner-decoration top-left">🌹</div>
+        <div class="corner-decoration top-right">🌹</div>
+        <div class="corner-decoration btm-left">🌹</div>
+        <div class="corner-decoration btm-right">🌹</div>
+    </div>
+
+    <div id="left-message" class="final-text"></div>
+    <div id="center-message" class="final-text">Happy Valentine's Day!</div>
+    <div id="right-message" class="final-text"></div>
+
+    <script>
+        // --- SETTINGS ---
+        
+        const LEFT_MSG_TEXT = "You are my favorite\nperson in the world.";
+        const RIGHT_MSG_TEXT = "I love you\nforever & always.";
+        
+        const START_TIME = 18; 
+        const SLIDESHOW_START_TIME = 30.5; 
+        const BLACKOUT_START = 46.5;       
+        const BLACKOUT_END = 51.5;         
+        const STOP_TIME = 60;              
+
+        const SLIDE_SPEED = 3000; 
+
+        // YOUR PHOTOS
+        const myPhotos = [
+            '4.jfif', 
+            '2.jfif', 
+            '3.jfif', 
+            '5.jfif', 
+            '1.jfif'
+        ];
+
+        // LYRICS
+        const lyricsData = [
+            { time: 19.5, text: "Fell in love, but it left me lonely" },
+            { time: 23.0, text: "Tried to trust, but it burned me slowly" },
+            { time: 27.5, text: "I didn't know what I was looking for" },
+            { time: 30.5, text: "'Til I found her" },
+            { time: 31.5, text: "I found her" },
+            { time: 45.0, text: "Without her" },
+            { time: 46.5, text: "I'm a mess (I'm a mess)" },
+            { time: 48.0, text: "There was nothing 'bout that love that made sense" },
+            { time: 50.0, text: "I was stressed" },
+            { time: 51.5, text: "'Til I found her (oh, oh)" },
+            { time: 60.0, text: "" }
+        ];
+
+        // --- SYSTEM LOGIC ---
+
+        const intro = document.getElementById('intro');
+        const slideshowContainer = document.getElementById('slideshow-container');
+        const music = document.getElementById('bg-music');
+        const lyricContainer = document.getElementById('lyrics-container');
+        const lyricText = document.getElementById('lyric-text');
+        const bouquetContainer = document.getElementById('bouquet-container');
+        
+        const centerMsg = document.getElementById('center-message');
+        const leftMsg = document.getElementById('left-message');
+        const rightMsg = document.getElementById('right-message');
+
+        let slideshowStarted = false;
+        let bouquetTriggered = false;
+        let slides = []; 
+
+        (function setup() {
+            myPhotos.forEach(src => {
+                let div = document.createElement('div');
+                div.classList.add('slide');
+                div.style.backgroundImage = `url('${src}')`;
+                slideshowContainer.appendChild(div);
+            });
+            slides = document.querySelectorAll('.slide');
+
+            leftMsg.innerText = LEFT_MSG_TEXT;
+            rightMsg.innerText = RIGHT_MSG_TEXT;
+        })();
+
+        function startExperience() {
+            intro.style.display = 'none';
+            music.currentTime = START_TIME;
+
+            var playPromise = music.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    lyricContainer.style.display = 'block';
+                    requestAnimationFrame(checkTime);
+                }).catch(error => {
+                    alert("Tap screen to play!");
+                });
             }
-        </style>
-    </head>
-    <body>
+        }
 
-        <audio id="bg-music" src="her.mp3"></audio>
-
-        <div id="intro" onclick="startExperience()">
-            <h1>Click to Start ❤️</h1>
-        </div>
-
-        <div id="slideshow-container"></div>
-
-        <div id="lyrics-container">
-            <div id="lyric-text" class="lyric-line"></div>
-        </div>
-
-        <div id="bouquet-container">
-            <div class="big-heart"></div>
-            <div class="bouquet-wrapper"></div>
-            <div class="corner-decoration top-left">🌹</div>
-            <div class="corner-decoration top-right">🌹</div>
-            <div class="corner-decoration btm-left">🌹</div>
-            <div class="corner-decoration btm-right">🌹</div>
-        </div>
-
-        <div id="left-message" class="final-text"></div>
-        <div id="center-message" class="final-text">Happy Valentine's Day!</div>
-        <div id="right-message" class="final-text"></div>
-
-        <script>
-            // --- SETTINGS ---
-            
-            const LEFT_MSG_TEXT = "You are my favorite\nperson in the world.";
-            const RIGHT_MSG_TEXT = "I love you\nforever & always.";
-            
-            const START_TIME = 18; 
-            const SLIDESHOW_START_TIME = 30.5; 
-            const BLACKOUT_START = 46.5;       
-            const BLACKOUT_END = 51.5;         
-            const STOP_TIME = 60;              
-
-            const SLIDE_SPEED = 3000; 
-
-            // YOUR PHOTOS
-            const myPhotos = [
-                '4.jfif', 
-                '2.jfif', 
-                '3.jfif', 
-                '5.jfif', 
-                '1.jfif'
-            ];
+        function checkTime() {
+            const currentTime = music.currentTime;
 
             // LYRICS
-            const lyricsData = [
-                { time: 19.5, text: "Fell in love, but it left me lonely" },
-                { time: 23.0, text: "Tried to trust, but it burned me slowly" },
-                { time: 27.5, text: "I didn't know what I was looking for" },
-                { time: 30.5, text: "'Til I found her" },
-                { time: 31.5, text: "I found her" },
-                { time: 45.0, text: "Without her" },
-                { time: 46.5, text: "I'm a mess (I'm a mess)" },
-                { time: 48.0, text: "There was nothing 'bout that love that made sense" },
-                { time: 50.0, text: "I was stressed" },
-                { time: 51.5, text: "'Til I found her (oh, oh)" },
-                { time: 60.0, text: "" }
-            ];
+            let currentLyricText = "";
+            for (let i = 0; i < lyricsData.length; i++) {
+                if (currentTime >= lyricsData[i].time) {
+                    currentLyricText = lyricsData[i].text;
+                } else {
+                    break; 
+                }
+            }
+            if (lyricText.innerText !== currentLyricText) {
+                lyricText.style.opacity = 0;
+                setTimeout(() => {
+                    lyricText.innerText = currentLyricText;
+                    lyricText.style.opacity = 1;
+                }, 150);
+            }
 
-            // --- SYSTEM LOGIC ---
+            // SLIDESHOW
+            if (currentTime >= SLIDESHOW_START_TIME && !slideshowStarted) {
+                startSlideshow();
+            }
 
-            const intro = document.getElementById('intro');
-            const slideshowContainer = document.getElementById('slideshow-container');
-            const music = document.getElementById('bg-music');
-            const lyricContainer = document.getElementById('lyrics-container');
-            const lyricText = document.getElementById('lyric-text');
-            const bouquetContainer = document.getElementById('bouquet-container');
+            // BLACKOUT
+            if (slideshowStarted && !bouquetTriggered) {
+                if (currentTime >= BLACKOUT_START && currentTime < BLACKOUT_END) {
+                    slideshowContainer.style.opacity = 0; 
+                } else {
+                    slideshowContainer.style.opacity = 1;
+                }
+            }
+
+            // BOUQUET
+            if (currentTime >= STOP_TIME && !bouquetTriggered) {
+                music.pause();
+                triggerBouquet();
+            }
+
+            if (!bouquetTriggered) {
+                requestAnimationFrame(checkTime);
+            }
+        }
+
+        function startSlideshow() {
+            slideshowStarted = true;
+            slideshowContainer.style.display = 'block';
+            let currentSlide = 0;
+            slides[0].classList.add('active-slide');
+            setInterval(() => {
+                if(bouquetTriggered) return;
+                slides[currentSlide].classList.remove('active-slide');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active-slide');
+            }, SLIDE_SPEED);
+        }
+
+        function triggerBouquet() {
+            bouquetTriggered = true;
             
-            const centerMsg = document.getElementById('center-message');
-            const leftMsg = document.getElementById('left-message');
-            const rightMsg = document.getElementById('right-message');
+            lyricContainer.style.transition = "opacity 1s";
+            lyricContainer.style.opacity = 0;
+            slideshowContainer.style.transition = "opacity 1s";
+            slideshowContainer.style.opacity = 0;
 
-            let slideshowStarted = false;
-            let bouquetTriggered = false;
-            let slides = []; 
+            setTimeout(() => {
+                lyricContainer.style.display = 'none';
+                slideshowContainer.style.display = 'none';
+                createBouquet();
+            }, 1000);
+        }
 
-            (function setup() {
-                myPhotos.forEach(src => {
-                    let div = document.createElement('div');
-                    div.classList.add('slide');
-                    div.style.backgroundImage = `url('${src}')`;
-                    slideshowContainer.appendChild(div);
-                });
-                slides = document.querySelectorAll('.slide');
+        function createBouquet() {
+            bouquetContainer.style.display = 'flex';
+            
+            document.querySelector('.bouquet-wrapper').style.opacity = 1;
+            document.querySelector('.big-heart').style.opacity = 0.5;
+            document.querySelectorAll('.corner-decoration').forEach(el => el.style.opacity = 1);
+            
+            const totalPhotos = myPhotos.length;
+            const maxAngle = 80; 
+            const angleStep = maxAngle / (totalPhotos - 1 || 1); 
 
-                leftMsg.innerText = LEFT_MSG_TEXT;
-                rightMsg.innerText = RIGHT_MSG_TEXT;
-            })();
-
-            function startExperience() {
-                intro.style.display = 'none';
-                music.currentTime = START_TIME;
-
-                var playPromise = music.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(_ => {
-                        lyricContainer.style.display = 'block';
-                        requestAnimationFrame(checkTime);
-                    }).catch(error => {
-                        alert("Tap screen to play!");
-                    });
-                }
-            }
-
-            function checkTime() {
-                const currentTime = music.currentTime;
-
-                // LYRICS
-                let currentLyricText = "";
-                for (let i = 0; i < lyricsData.length; i++) {
-                    if (currentTime >= lyricsData[i].time) {
-                        currentLyricText = lyricsData[i].text;
-                    } else {
-                        break; 
-                    }
-                }
-                if (lyricText.innerText !== currentLyricText) {
-                    lyricText.style.opacity = 0;
-                    setTimeout(() => {
-                        lyricText.innerText = currentLyricText;
-                        lyricText.style.opacity = 1;
-                    }, 150);
-                }
-
-                // SLIDESHOW
-                if (currentTime >= SLIDESHOW_START_TIME && !slideshowStarted) {
-                    startSlideshow();
-                }
-
-                // BLACKOUT
-                if (slideshowStarted && !bouquetTriggered) {
-                    if (currentTime >= BLACKOUT_START && currentTime < BLACKOUT_END) {
-                        slideshowContainer.style.opacity = 0; 
-                    } else {
-                        slideshowContainer.style.opacity = 1;
-                    }
-                }
-
-                // BOUQUET
-                if (currentTime >= STOP_TIME && !bouquetTriggered) {
-                    music.pause();
-                    triggerBouquet();
-                }
-
-                if (!bouquetTriggered) {
-                    requestAnimationFrame(checkTime);
-                }
-            }
-
-            function startSlideshow() {
-                slideshowStarted = true;
-                slideshowContainer.style.display = 'block';
-                let currentSlide = 0;
-                slides[0].classList.add('active-slide');
-                setInterval(() => {
-                    if(bouquetTriggered) return;
-                    slides[currentSlide].classList.remove('active-slide');
-                    currentSlide = (currentSlide + 1) % slides.length;
-                    slides[currentSlide].classList.add('active-slide');
-                }, SLIDE_SPEED);
-            }
-
-            function triggerBouquet() {
-                bouquetTriggered = true;
+            myPhotos.forEach((src, index) => {
+                let unit = document.createElement('div');
+                unit.classList.add('flower-unit');
                 
-                lyricContainer.style.transition = "opacity 1s";
-                lyricContainer.style.opacity = 0;
-                slideshowContainer.style.transition = "opacity 1s";
-                slideshowContainer.style.opacity = 0;
+                let angle = (index * angleStep) - (maxAngle / 2);
+                unit.style.transform = `rotate(${angle}deg)`;
+                
+                let stem = document.createElement('div');
+                stem.classList.add('stem');
+                
+                let leafL = document.createElement('div');
+                leafL.classList.add('leaf', 'left');
+                let leafR = document.createElement('div');
+                leafR.classList.add('leaf', 'right');
+                stem.appendChild(leafL);
+                stem.appendChild(leafR);
+
+                let img = document.createElement('img');
+                img.src = src;
+                img.classList.add('photo-bloom');
+                
+                stem.appendChild(img);
+                unit.appendChild(stem);
+                bouquetContainer.appendChild(unit);
 
                 setTimeout(() => {
-                    lyricContainer.style.display = 'none';
-                    slideshowContainer.style.display = 'none';
-                    createBouquet();
-                }, 1000);
-            }
-
-            function createBouquet() {
-                bouquetContainer.style.display = 'flex';
-                
-                // Fade in Wrapper and Decorations
-                document.querySelector('.bouquet-wrapper').style.opacity = 1;
-                document.querySelector('.big-heart').style.opacity = 0.5;
-                document.querySelectorAll('.corner-decoration').forEach(el => el.style.opacity = 1);
-                
-                const totalPhotos = myPhotos.length;
-                const maxAngle = 80; 
-                const angleStep = maxAngle / (totalPhotos - 1 || 1); 
-
-                myPhotos.forEach((src, index) => {
-                    // Create Flower Unit
-                    let unit = document.createElement('div');
-                    unit.classList.add('flower-unit');
-                    
-                    // Calculate Rotation
-                    let angle = (index * angleStep) - (maxAngle / 2);
-                    unit.style.transform = `rotate(${angle}deg)`;
-                    
-                    // Create Stem
-                    let stem = document.createElement('div');
-                    stem.classList.add('stem');
-                    
-                    // Add Leaves
-                    let leafL = document.createElement('div');
-                    leafL.classList.add('leaf', 'left');
-                    let leafR = document.createElement('div');
-                    leafR.classList.add('leaf', 'right');
-                    stem.appendChild(leafL);
-                    stem.appendChild(leafR);
-
-                    // Create Photo Bloom
-                    let img = document.createElement('img');
-                    img.src = src;
-                    img.classList.add('photo-bloom');
-                    
-                    // Assemble
-                    stem.appendChild(img);
-                    unit.appendChild(stem);
-                    bouquetContainer.appendChild(unit);
-
-                    // ANIMATION SEQUENCE
-                    // 1. Grow Stem
-                    setTimeout(() => {
-                        stem.classList.add('grow-stem');
-                        leafL.classList.add('show-leaf');
-                        leafR.classList.add('show-leaf');
-                    }, index * 200 + 500); 
-
-                    // 2. Pop Bloom
-                    setTimeout(() => {
-                        img.classList.add('bloom-now');
-                    }, index * 200 + 1500); // Delays bloom until stem is grown
-                });
+                    stem.classList.add('grow-stem');
+                    leafL.classList.add('show-leaf');
+                    leafR.classList.add('show-leaf');
+                }, index * 200 + 500); 
 
                 setTimeout(() => {
-                    centerMsg.style.opacity = 1;
-                    leftMsg.style.opacity = 1;
-                    rightMsg.style.opacity = 1;
-                }, 3000);
-            }
-        </script>
-    </body>
-    </html>
+                    img.classList.add('bloom-now');
+                }, index * 200 + 1500); 
+            });
+
+            setTimeout(() => {
+                centerMsg.style.opacity = 1;
+                leftMsg.style.opacity = 1;
+                rightMsg.style.opacity = 1;
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
