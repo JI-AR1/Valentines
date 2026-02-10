@@ -21,8 +21,46 @@
             color: white;
         }
 
+        /* --- TIME CAPSULE LOCK SCREEN --- */
+        #lock-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            z-index: 100; /* Highest priority */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #lock-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        #timer {
+            font-size: 2rem;
+            font-family: 'Courier New', monospace;
+            color: #ff99cc;
+            text-shadow: 0 0 10px #ff0066;
+            margin-top: 20px;
+        }
+
+        #lock-msg {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin-top: 10px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
         /* --- SCREEN 1: INTRO --- */
         #intro {
+            display: none; /* Hidden by default until unlocked */
             text-align: center;
             z-index: 50;
             cursor: pointer;
@@ -307,6 +345,13 @@
 </head>
 <body>
 
+    <div id="lock-screen">
+        <div id="lock-icon">🔒</div>
+        <h2>Time Capsule</h2>
+        <div id="lock-msg">This message is locked until<br>Valentine's Day (Feb 14).</div>
+        <div id="timer">Loading...</div>
+    </div>
+
     <audio id="bg-music" src="her.mp3"></audio>
 
     <div id="intro" onclick="startExperience()">
@@ -333,16 +378,24 @@
     <div id="right-message" class="final-text"></div>
 
     <script>
-        // --- SETTINGS ---
+        // --- 1. TIME CAPSULE SETTINGS ---
+        
+        // SET THIS TO TRUE TO TEST. SET TO FALSE FOR THE REAL GIFT.
+        const TESTING_MODE = true; 
+
+        // FIXED DATE FORMAT: 2026-02-14 at 00:00:00 (Philippines Time / UTC+8)
+        const TARGET_DATE = new Date("2026-02-14T00:00:00+08:00").getTime();
+
+        // --- 2. PRESENTATION SETTINGS ---
         
         const LEFT_MSG_TEXT = "You are my favorite\nperson in the world.";
         const RIGHT_MSG_TEXT = "I love you soo much\nforever & always.";
         
         const START_TIME = 18; 
         const SLIDESHOW_START_TIME = 30.5; 
-        const BLACKOUT_START = 46.5;       
-        const BLACKOUT_END = 51.5;         
-        const STOP_TIME = 60;              
+        const BLACKOUT_START = 46.5;        
+        const BLACKOUT_END = 51.5;          
+        const STOP_TIME = 60;               
 
         const SLIDE_SPEED = 3000; 
 
@@ -372,6 +425,8 @@
 
         // --- SYSTEM LOGIC ---
 
+        const lockScreen = document.getElementById('lock-screen');
+        const timerElement = document.getElementById('timer');
         const intro = document.getElementById('intro');
         const slideshowContainer = document.getElementById('slideshow-container');
         const music = document.getElementById('bg-music');
@@ -386,6 +441,44 @@
         let slideshowStarted = false;
         let bouquetTriggered = false;
         let slides = []; 
+
+        // --- STEP 1: RUN THE COUNTDOWN ---
+        const countdownInterval = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = TARGET_DATE - now;
+
+            // Calculate time components
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Unlock logic
+            if (TESTING_MODE) {
+                timerElement.innerHTML = "TEST MODE ACTIVE";
+                clearInterval(countdownInterval);
+                unlockSystem();
+            } 
+            else if (distance < 0) {
+                timerElement.innerHTML = "It's Time! ❤️";
+                clearInterval(countdownInterval);
+                unlockSystem();
+            } 
+            else {
+                timerElement.innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+            }
+        }, 1000);
+
+        function unlockSystem() {
+            lockScreen.style.transition = "opacity 1s";
+            lockScreen.style.opacity = 0;
+            setTimeout(() => {
+                lockScreen.style.display = "none";
+                intro.style.display = "block"; // Show the start button
+            }, 1000);
+        }
+
+        // --- STEP 2: SETUP & EXPERIENCE ---
 
         (function setup() {
             myPhotos.forEach(src => {
@@ -411,6 +504,11 @@
                     requestAnimationFrame(checkTime);
                 }).catch(error => {
                     alert("Tap screen to play!");
+                    document.body.addEventListener('click', () => {
+                        music.play();
+                        lyricContainer.style.display = 'block';
+                        requestAnimationFrame(checkTime);
+                    }, { once: true });
                 });
             }
         }
